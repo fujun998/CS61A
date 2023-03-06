@@ -23,6 +23,13 @@ def roll_dice(num_rolls, dice=six_sided):
     assert num_rolls > 0, 'Must roll at least once.'
     # BEGIN PROBLEM 1
     "*** YOUR CODE HERE ***"
+    res,sow_sad=0,False
+    for i in range(num_rolls):
+        cd=dice()
+        if(cd==1):
+            sow_sad=True
+        res+=cd
+    return 1 if sow_sad else res
     # END PROBLEM 1
 
 
@@ -34,6 +41,8 @@ def tail_points(opponent_score):
     """
     # BEGIN PROBLEM 2
     "*** YOUR CODE HERE ***"
+    s=str(opponent_score)
+    return abs(((opponent_score%100)//10)-opponent_score%10)*2+1
     # END PROBLEM 2
 
 
@@ -51,6 +60,10 @@ def take_turn(num_rolls, opponent_score, dice=six_sided):
     assert num_rolls <= 10, 'Cannot roll more than 10 dice.'
     # BEGIN PROBLEM 3
     "*** YOUR CODE HERE ***"
+    if(num_rolls==0):
+        return tail_points(opponent_score)
+    else:
+        return roll_dice(num_rolls,dice)
     # END PROBLEM 3
 
 
@@ -74,6 +87,12 @@ def square_update(num_rolls, player_score, opponent_score, dice=six_sided):
 
 # BEGIN PROBLEM 4
 "*** YOUR CODE HERE ***"
+
+def perfect_square(n):
+    return int(n**0.5)**2==n
+
+def next_perfect_square(n):
+    return int(n+2*n**.5+1)
 # END PROBLEM 4
 
 
@@ -112,7 +131,13 @@ def play(strategy0, strategy1, update,
     """
     who = 0  # Who is about to take a turn, 0 (first) or 1 (second)
     # BEGIN PROBLEM 5
-    "*** YOUR CODE HERE ***"
+    while(score0<goal and score1<goal):
+        score0=update(strategy0(score0,score1),score0,score1,dice)
+        if(score0>=goal):
+            break
+        score1=update(strategy1(score1,score0),score1,score0,dice)
+        if(score1>=goal):
+            break
     # END PROBLEM 5
     return score0, score1
 
@@ -138,6 +163,7 @@ def always_roll(n):
     assert n >= 0 and n <= 10
     # BEGIN PROBLEM 6
     "*** YOUR CODE HERE ***"
+    return lambda a,b:n
     # END PROBLEM 6
 
 
@@ -168,6 +194,12 @@ def is_always_roll(strategy, goal=GOAL):
     """
     # BEGIN PROBLEM 7
     "*** YOUR CODE HERE ***"
+    n=strategy(0,0)
+    for i in range(100):
+        for j in range(100):
+            if(strategy(i,j)!=n):
+                return False
+    return True
     # END PROBLEM 7
 
 
@@ -183,7 +215,12 @@ def make_averaged(original_function, total_samples=1000):
     3.0
     """
     # BEGIN PROBLEM 8
-    "*** YOUR CODE HERE ***"
+    def a(*args):
+        sum=0
+        for i in range(total_samples):
+            sum+=original_function(*args)
+        return sum/total_samples
+    return a
     # END PROBLEM 8
 
 
@@ -197,7 +234,16 @@ def max_scoring_num_rolls(dice=six_sided, total_samples=1000):
     1
     """
     # BEGIN PROBLEM 9
-    "*** YOUR CODE HERE ***"
+    ar=make_averaged(roll_dice,total_samples)
+    max=0
+    res=1
+    c=0
+    for i in range(1,11):
+        c=ar(i,dice)
+        if(c>max):
+            res=i
+            max=c
+    return res
     # END PROBLEM 9
 
 
@@ -241,24 +287,24 @@ def tail_strategy(score, opponent_score, threshold=12, num_rolls=6):
     points, and returns NUM_ROLLS otherwise. Ignore score and Square Swine.
     """
     # BEGIN PROBLEM 10
-    return num_rolls  # Remove this line once implemented.
+    return 0 if tail_points(opponent_score)>=threshold else num_rolls
     # END PROBLEM 10
 
 
 def square_strategy(score, opponent_score, threshold=12, num_rolls=6):
     """This strategy returns 0 dice when your score would increase by at least threshold."""
     # BEGIN PROBLEM 11
-    return num_rolls  # Remove this line once implemented.
+    return 0 if square_update(0,score,opponent_score)-score>=threshold else num_rolls
     # END PROBLEM 11
 
 
 def final_strategy(score, opponent_score):
     """Write a brief description of your final strategy.
-
     *** YOUR DESCRIPTION HERE ***
+    This strategy returns 0 dice when your score would increase by at least 9.
     """
     # BEGIN PROBLEM 12
-    return 6  # Remove this line once implemented.
+    return square_strategy(score, opponent_score, 9, 6)
     # END PROBLEM 12
 
 
